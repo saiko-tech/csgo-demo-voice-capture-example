@@ -2,6 +2,12 @@
 
 This is an example of how to use the [demoinfocs-golang](https://github.com/markus-wa/demoinfocs-golang) library to capture voice chat in CELT format.
 
+
+## Join us on Discord
+
+[![Discord Chat](https://img.shields.io/discord/901824796302643281?color=%235865F2&label=discord&style=for-the-badge)](https://discord.gg/eTVBgKeHnh)
+
+
 ## Prerequisites
 
 You need to have the following installed:
