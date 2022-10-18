@@ -2,8 +2,6 @@
 
 This is an example of how to use the [demoinfocs-golang](github.com/markus-wa/demoinfocs-golang) library to capture voice chat in CELT format.
 
-See https://gist.github.com/ericek111/abe5829f6e52e4b25b3b97a0efd0b22b for how to play it back.
-
 ## Prerequisites
 
 You need to have the following installed:
@@ -33,4 +31,8 @@ You can play this file via:
 
 Or convert it to `.wav` via:
 
-sox -t raw -r 22050 -e signed -b 16 -c 1 -L out.celt out.wav
+    sox -t raw -r 22050 -e signed -b 16 -c 1 -L out.celt out.wav
+
+## Acknowledgements
+
+Thanks to [@ericek111](https://github.com/ericek111) for [this gist](https://gist.github.com/ericek111/abe5829f6e52e4b25b3b97a0efd0b22b)
