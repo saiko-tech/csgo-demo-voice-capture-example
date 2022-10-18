@@ -8,12 +8,14 @@ See https://gist.github.com/ericek111/abe5829f6e52e4b25b3b97a0efd0b22b for how t
 
 You need to have the following installed:
 
-- Linux (macOS or WSL may work but not tested)
+- Linux (macOS or WSL may work, but are not tested)
 - CS:GO Linux Binaries
 - CELT - Audio Codec Library
 - Sox - Sound Processing Tools (for conversion to `.wav`)
 
 ## Running the example
+
+Adjust the paths in the below example before running.
 
 ```terminal
 STEAM_LIBRARY="..." # <--- insert path to steam library here
