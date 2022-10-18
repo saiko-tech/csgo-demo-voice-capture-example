@@ -9,7 +9,7 @@ You need to have the following installed:
 - Linux (macOS or WSL may work, but are not tested)
 - CS:GO Linux Binaries
 - CELT - Audio Codec Library
-- Sox - Sound Processing Tools (for conversion to `.wav`)
+- Sox - Sound Processing Tools (for playback and conversion to `.wav`)
 
 ## Running the example
 
@@ -25,7 +25,8 @@ go run capture_voice.go -demo /path/to/demo.dem # <--- replace with your demo
 ```
 
 This will create a file called `out.celt`.
-You can play this file via:
+
+With Sox installed, you can play this file via:
 
     play -t raw -r 22050 -e signed -b 16 -c 1 out.celt
 

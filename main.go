@@ -56,7 +56,9 @@ int celt2wav() {
 import "C"
 
 import (
+	"fmt"
 	"os"
+	"time"
 
 	"google.golang.org/protobuf/proto"
 
@@ -87,7 +89,22 @@ func main() {
 
 	defer outF.Close()
 
+	var lastXUID uint64 = 0
+
 	p.RegisterNetMessageHandler(func(msg *msg.CSVCMsg_VoiceData) {
+		voicePlayerXUID := msg.GetXuid()
+
+		players := p.GameState().Participants().All()
+
+		if voicePlayerXUID != lastXUID {
+			for _, player := range players {
+				if player.SteamID64 == voicePlayerXUID {
+					lastXUID = voicePlayerXUID
+					fmt.Printf("%s: %d:%d - player %q is speaking\n", p.CurrentTime().Round(time.Second), p.GameState().TeamCounterTerrorists().Score(), p.GameState().TeamTerrorists().Score(), player.Name)
+				}
+			}
+		}
+
 		_, err := outF.Write(msg.GetVoiceData())
 		checkError(err)
 	})
@@ -99,6 +116,12 @@ func main() {
 	if res != 0 {
 		panic("celt2wav failed")
 	}
+
+	fmt.Println()
+
+	fmt.Println("saved voice chat audio to out.celt")
+	fmt.Println("play via: play -t raw -r 22050 -e signed -b 16 -c 1 out.celt")
+	fmt.Println("or convert to .wav via: sox -t raw -r 22050 -e signed -b 16 -c 1 out.celt out.wav")
 }
 
 func checkError(err error) {
