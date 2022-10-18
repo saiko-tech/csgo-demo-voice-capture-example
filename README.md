@@ -1,6 +1,6 @@
 # Capturing CS:GO Demo Voice Data
 
-This is an example of how to use the [demoinfocs-golang](github.com/markus-wa/demoinfocs-golang) library to capture voice chat in CELT format.
+This is an example of how to use the [demoinfocs-golang](https://github.com/markus-wa/demoinfocs-golang) library to capture voice chat in CELT format.
 
 ## Prerequisites
 
