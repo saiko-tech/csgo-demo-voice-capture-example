@@ -14,13 +14,13 @@ package main
 
 #define BUF_SIZE 1024*1024
 
-int celt2wav() {
+int raw2celt(char* in, char* out) {
 	unsigned char buf[BUF_SIZE];
 
 	const unsigned int FRAME_SIZE = 512;
 	const unsigned int SAMPLE_RATE = 22050;
 
-	FILE *f = fopen("voicedata.dat", "r");
+	FILE *f = fopen(in, "r");
 	if (f == NULL) {
 		  return 1;
 	}
@@ -45,7 +45,7 @@ int celt2wav() {
 		}
 	}
 
-	FILE* file_p = fopen("out.celt", "w");
+	FILE* file_p = fopen(out, "w");
 	size_t written = fwrite(pcmout, outsize, 1, file_p);
 	fclose(file_p);
 
@@ -58,7 +58,9 @@ import "C"
 import (
 	"fmt"
 	"os"
-	"time"
+	"path/filepath"
+	"strconv"
+	"strings"
 
 	"google.golang.org/protobuf/proto"
 
@@ -77,6 +79,7 @@ func main() {
 	p := demoinfocs.NewParserWithConfig(f, demoinfocs.ParserConfig{
 		MsgQueueBufferSize: -1,
 		AdditionalNetMessageCreators: map[int]demoinfocs.NetMessageCreator{
+			int(msg.SVC_Messages_svc_VoiceInit): func() proto.Message { return &msg.CSVCMsg_VoiceInit{} },
 			int(msg.SVC_Messages_svc_VoiceData): func() proto.Message { return &msg.CSVCMsg_VoiceData{} },
 		},
 		IgnoreErrBombsiteIndexNotFound: false,
@@ -84,44 +87,61 @@ func main() {
 	})
 	defer p.Close()
 
-	outF, err := os.Create("voicedata.dat")
-	checkError(err)
+	outFilesBySectionNr := make(map[uint32]*os.File)
 
-	defer outF.Close()
+	defer func() {
+		for _, f := range outFilesBySectionNr {
+			f.Close()
+		}
+	}()
 
-	var lastXUID uint64 = 0
+	p.RegisterNetMessageHandler(func(msg *msg.CSVCMsg_VoiceInit) {
+		fmt.Println("init:", msg.String())
+	})
+
+	var sections []string
 
 	p.RegisterNetMessageHandler(func(msg *msg.CSVCMsg_VoiceData) {
-		voicePlayerXUID := msg.GetXuid()
+		sectionNr := msg.GetSectionNumber()
 
-		players := p.GameState().Participants().All()
+		outFile, ok := outFilesBySectionNr[sectionNr]
+		if !ok {
+			sections = append(sections, strconv.Itoa(int(sectionNr)))
+			outFile, err = os.Create(fmt.Sprintf("out/%d.raw", sectionNr))
+			checkError(err)
 
-		if voicePlayerXUID != lastXUID {
-			for _, player := range players {
-				if player.SteamID64 == voicePlayerXUID {
-					lastXUID = voicePlayerXUID
-					fmt.Printf("%s: %d:%d - player %q is speaking\n", p.CurrentTime().Round(time.Second), p.GameState().TeamCounterTerrorists().Score(), p.GameState().TeamTerrorists().Score(), player.Name)
-				}
-			}
+			outFilesBySectionNr[sectionNr] = outFile
 		}
 
-		_, err := outF.Write(msg.GetVoiceData())
+		_, err := outFile.Write(msg.GetVoiceData())
 		checkError(err)
+
+		msg.VoiceData = nil
 	})
 
 	err = p.ParseToEnd()
 	checkError(err)
 
-	res := C.celt2wav()
-	if res != 0 {
-		panic("celt2wav failed")
+	for _, rawFile := range outFilesBySectionNr {
+		rawFileName := rawFile.Name()
+		celtFileName := strings.TrimSuffix(rawFileName, filepath.Ext(rawFileName)) + ".celt"
+
+		err = rawFile.Close()
+		checkError(err)
+
+		res := C.raw2celt(C.CString(rawFileName), C.CString(celtFileName))
+		if res != 0 {
+			panic("raw2celt failed")
+		}
 	}
 
 	fmt.Println()
 
-	fmt.Println("saved voice chat audio to out.celt")
-	fmt.Println("play via: play -t raw -r 22050 -e signed -b 16 -c 1 out.celt")
-	fmt.Println("or convert to .wav via: sox -t raw -r 22050 -e signed -b 16 -c 1 out.celt out.wav")
+	fmt.Printf("order:\n\t%s\n", strings.Join(sections, "\n\t"))
+
+	fmt.Println("saved voice chat audio to out/*.celt")
+	fmt.Println("play via: play -t raw -r 22050 -e signed -b 16 -c 1 out/1.celt")
+	fmt.Println("or convert to .wav via: sox -t raw -r 22050 -e signed -b 16 -c 1 out/1.celt out/1.wav")
 }
 
 func checkError(err error) {
