@@ -30,15 +30,15 @@ export LD_LIBRARY_PATH="$CSGO_BIN:$LD_LIBRARY_PATH"
 go run capture_voice.go -demo /path/to/demo.dem # <--- replace with your demo
 ```
 
-This will create a file called `out.celt`.
+This will create a different files in an `out/` directory. Each file is a separate sequence of voice audio.
 
-With Sox installed, you can play this file via:
+With Sox installed, you can play these files back via the following command (replace 1 with the sequence to play back):
 
-    play -t raw -r 22050 -e signed -b 16 -c 1 out.celt
+    play -t raw -r 22050 -e signed -b 16 -c 1 out/1.celt
 
 Or convert it to `.wav` via:
 
-    sox -t raw -r 22050 -e signed -b 16 -c 1 -L out.celt out.wav
+    sox -t raw -r 22050 -e signed -b 16 -c 1 -L out/1.celt out/1.wav
 
 ## Acknowledgements
 
