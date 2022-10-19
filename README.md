@@ -17,6 +17,10 @@ You need to have the following installed:
 - CELT - Audio Codec Library
 - Sox - Sound Processing Tools (for playback and conversion to `.wav`)
 
+## Note About Valve Matchmaking
+
+Valve Matchmaking demos do not record voice audio data, and as such this can't be extracted from MM demos.
+
 ## Running the example
 
 Adjust the paths in the below example before running.
